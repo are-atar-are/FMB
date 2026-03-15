@@ -20,8 +20,8 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          BUILD_CERTIFICATE_BASE64=$(cat .github/secrets/BUILD_CERTIFICATE_BASE64.txt)
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          # Decode certificate (tr removes newlines)
+          cat .github/secrets/BUILD_CERTIFICATE_BASE64.txt | tr -d '\n' | base64 -d > $CERTIFICATE_PATH
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
@@ -32,8 +32,8 @@ jobs:
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           
-          # Decode the provisioning profile
-          base64 -d .github/secrets/PROVISION_PROFILE_BASE64.txt > $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision
+          # Decode the provisioning profile (tr removes newlines)
+          cat .github/secrets/PROVISION_PROFILE_BASE64.txt | tr -d '\n' | base64 -d > $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision
           echo "Decoded provisioning profile"
           ls -la $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision
           
