@@ -479,7 +479,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.fmb.ios";
-				PRODUCT_NAME = "My FMB";
+				PRODUCT_NAME = "MY-FNB";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -505,7 +505,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.fmb.ios";
-				PRODUCT_NAME = "My FMB";
+				PRODUCT_NAME = "MY-FNB";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
