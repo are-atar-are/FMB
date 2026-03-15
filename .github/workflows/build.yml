@@ -51,6 +51,8 @@ jobs:
           pod install
 
       - name: Build iOS Archive
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_16.app/Contents/Developer
         run: |
           cd ios
           xcodebuild -workspace FMB.xcworkspace \
