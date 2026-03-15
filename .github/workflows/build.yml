@@ -37,12 +37,12 @@ jobs:
           echo "Decoded provisioning profile"
           ls -la $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision
           
-          # Extract UUID from the provisioning profile
-          PROFILE_UUID=$(security cms -D -i $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision 2>/dev/null | grep -A1 "<key>UUID</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '\n')
+          # Extract UUID from the provisioning profile using openssl (handles old encryption)
+          PROFILE_UUID=$(openssl smime -inform DER -verify -noverify -in $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision 2>/dev/null | grep -a "<key>UUID</key>" -A1 | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '\n')
           echo "Profile UUID: '$PROFILE_UUID'"
           
           # Also extract the profile name
-          PROFILE_NAME=$(security cms -D -i $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision 2>/dev/null | grep -A1 "<key>Name</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '\n')
+          PROFILE_NAME=$(openssl smime -inform DER -verify -noverify -in $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision 2>/dev/null | grep -a "<key>Name</key>" -A1 | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '\n')
           echo "Profile Name: '$PROFILE_NAME'"
           
           # If UUID is empty, use a default name
