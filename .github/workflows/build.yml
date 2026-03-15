@@ -33,9 +33,23 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           PROFILE_BASE64=$(cat .github/secrets/PROVISION_PROFILE_BASE64.txt)
           echo -n "$PROFILE_BASE64" | base64 --decode -o $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision
+          echo "Decoded provisioning profile"
+          ls -la $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision
+          
+          # Extract UUID from the provisioning profile
           PROFILE_UUID=$(security cms -D -i $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision 2>/dev/null | grep -A1 "<key>UUID</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '\n')
+          echo "Profile UUID: $PROFILE_UUID"
+          
+          # Also extract the profile name
+          PROFILE_NAME=$(security cms -D -i $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision 2>/dev/null | grep -A1 "<key>Name</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '\n')
+          echo "Profile Name: $PROFILE_NAME"
+          
+          # Copy to the provisioning profiles directory with UUID as filename
           cp $RUNNER_TEMP/FMB_Ad_Hoc.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$PROFILE_UUID.mobileprovision
           echo "Installed provisioning profile with UUID: $PROFILE_UUID"
+          
+          # List installed profiles
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - uses: actions/setup-node@v4
         with:
