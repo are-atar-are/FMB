@@ -1,9 +1,10 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../store/store';
 import { setVehicles, confirmBooking as confirmBookingAction } from '../features/booking/redux/bookingSlice';
 import { selectSelectedVehicle, selectSelectedDate, selectSelectedTime, selectSelectedDays } from '../features/booking/redux/bookingSelectors';
-import { Vehicle } from '../features/booking/types';
+import { Vehicle, Booking } from '../features/booking/types';
+import firestore from '@react-native-firebase/firestore';
 
 // Placeholder user ID - replace with actual auth
 const CURRENT_USER_ID = 'user-001';
@@ -60,36 +61,44 @@ const MOCK_VEHICLES: Vehicle[] = [
   },
 ];
 
+// Check if Firebase is available
+const isFirebaseAvailable = () => {
+  try {
+    firestore().collection('test');
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const useFirebaseVehicles = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    // For now, use mock data since Firebase isn't fully set up
-    // TODO: Replace with actual Firebase integration
-    dispatch(setVehicles(MOCK_VEHICLES));
+    if (!isFirebaseAvailable()) {
+      console.log('Firebase not available, using mock data');
+      dispatch(setVehicles(MOCK_VEHICLES));
+      return;
+    }
 
-    // When Firebase is ready, use this:
-    /*
-    const loadVehicles = async () => {
-      try {
-        const vehicles = await fetchVehicles();
-        dispatch(setVehicles(vehicles));
-      } catch (error) {
-        console.error('Failed to load vehicles:', error);
-        // Fallback to mock data
-        dispatch(setVehicles(MOCK_VEHICLES));
-      }
-    };
-
-    loadVehicles();
-
-    // Real-time subscription
-    const unsubscribe = subscribeToVehicles((vehicles) => {
-      dispatch(setVehicles(vehicles));
-    });
+    // Subscribe to real-time vehicle updates
+    const unsubscribe = firestore()
+      .collection('vehicles')
+      .onSnapshot(
+        snapshot => {
+          const vehicles = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          } as Vehicle));
+          dispatch(setVehicles(vehicles));
+        },
+        error => {
+          console.error('Error fetching vehicles:', error);
+          dispatch(setVehicles(MOCK_VEHICLES));
+        }
+      );
 
     return () => unsubscribe();
-    */
   }, [dispatch]);
 };
 
@@ -106,14 +115,30 @@ export const useCreateBooking = () => {
     }
 
     try {
-      // For now, just update Redux without Firebase
-      // TODO: Save to Firebase when ready
+      const bookingData = {
+        vehicle: selectedVehicle,
+        date: selectedDate,
+        time: selectedTime,
+        days: selectedDays,
+        status: 'confirmed' as const,
+        userId: CURRENT_USER_ID,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Save to Firebase if available
+      if (isFirebaseAvailable()) {
+        await firestore().collection('bookings').add(bookingData);
+      }
+
+      // Update Redux
       dispatch(confirmBookingAction());
       
       return true;
     } catch (error) {
       console.error('Failed to create booking:', error);
-      return false;
+      // Still update Redux even if Firebase fails
+      dispatch(confirmBookingAction());
+      return true;
     }
   }, [dispatch, selectedVehicle, selectedDate, selectedTime, selectedDays]);
 
@@ -123,8 +148,12 @@ export const useCreateBooking = () => {
 export const useCancelBooking = () => {
   const cancelBooking = useCallback(async (bookingId: string): Promise<boolean> => {
     try {
-      // TODO: Cancel in Firebase when ready
-      console.log('Cancelling booking:', bookingId);
+      if (isFirebaseAvailable()) {
+        await firestore()
+          .collection('bookings')
+          .doc(bookingId)
+          .update({ status: 'cancelled' });
+      }
       return true;
     } catch (error) {
       console.error('Failed to cancel booking:', error);
@@ -133,4 +162,39 @@ export const useCancelBooking = () => {
   }, []);
 
   return { cancelBooking };
+};
+
+export const useUserBookings = (userId: string) => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isFirebaseAvailable()) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = firestore()
+      .collection('bookings')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(
+        snapshot => {
+          const userBookings = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          } as Booking));
+          setBookings(userBookings);
+          setLoading(false);
+        },
+        error => {
+          console.error('Error fetching user bookings:', error);
+          setLoading(false);
+        }
+      );
+
+    return () => unsubscribe();
+  }, [userId]);
+
+  return { bookings, loading };
 };
