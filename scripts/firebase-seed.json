@@ -1,0 +1,79 @@
+{
+  "vehicles": {
+    "hilux-001": {
+      "name": "Toyota Hilux",
+      "type": "Bakkie",
+      "available": true,
+      "registration": "ABC123GP",
+      "fuelType": "Diesel",
+      "power": "150 KW",
+      "topSpeed": "170 km/h",
+      "location": "Johannesburg Office",
+      "bookingTimeSlots": ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM"],
+      "driverName": "Company Fleet",
+      "driverRole": "Internal",
+      "vehicleImage": "hilux-side",
+      "createdAt": "2026-03-16T10:00:00Z"
+    },
+    "ranger-001": {
+      "name": "Ford Ranger",
+      "type": "Bakkie",
+      "available": true,
+      "registration": "XYZ789GP",
+      "fuelType": "Diesel",
+      "power": "200 KW",
+      "topSpeed": "180 km/h",
+      "location": "Cape Town Office",
+      "bookingTimeSlots": ["9:00 AM", "10:00 AM", "2:00 PM", "3:00 PM"],
+      "driverName": "Company Fleet",
+      "driverRole": "Internal",
+      "vehicleImage": "hilux-front",
+      "createdAt": "2026-03-16T10:00:00Z"
+    },
+    "polo-001": {
+      "name": "VW Polo",
+      "type": "Hatch",
+      "available": true,
+      "registration": "DEF456GP",
+      "fuelType": "Petrol",
+      "power": "85 KW",
+      "topSpeed": "190 km/h",
+      "location": "Durban Office",
+      "bookingTimeSlots": ["8:00 AM", "9:00 AM", "10:00 AM"],
+      "driverName": "Company Fleet",
+      "driverRole": "Internal",
+      "vehicleImage": "sedan-top",
+      "createdAt": "2026-03-16T10:00:00Z"
+    },
+    "isuzu-001": {
+      "name": "Isuzu D-Max",
+      "type": "Bakkie",
+      "available": true,
+      "registration": "GHI789GP",
+      "fuelType": "Diesel",
+      "power": "130 KW",
+      "topSpeed": "165 km/h",
+      "location": "Johannesburg Office",
+      "bookingTimeSlots": ["9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM"],
+      "driverName": "Company Fleet",
+      "driverRole": "Internal",
+      "vehicleImage": "hilux-side",
+      "createdAt": "2026-03-16T10:00:00Z"
+    },
+    "corolla-001": {
+      "name": "Toyota Corolla",
+      "type": "Sedan",
+      "available": true,
+      "registration": "JKL012GP",
+      "fuelType": "Petrol",
+      "power": "103 KW",
+      "topSpeed": "195 km/h",
+      "location": "Cape Town Office",
+      "bookingTimeSlots": ["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM"],
+      "driverName": "Company Fleet",
+      "driverRole": "Internal",
+      "vehicleImage": "sedan-top",
+      "createdAt": "2026-03-16T10:00:00Z"
+    }
+  }
+}
