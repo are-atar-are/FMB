@@ -20,10 +20,12 @@ import BookingConfirmationScreen from './src/features/booking/screens/BookingCon
 import MyBookingsScreen from './src/features/booking/screens/MyBookingsScreen';
 import SplashScreen from './src/components/SplashScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import SeedDatabaseScreen from './src/features/admin/SeedDatabaseScreen';
 import { useFirebaseVehicles } from './src/services/firebaseHooks';
 
 const AppContent: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [showSeedScreen, setShowSeedScreen] = useState(false);
   const dispatch = useDispatch();
   const currentScreen = useSelector(selectCurrentScreen);
   const hasBooking = useSelector(selectHasBooking);
@@ -66,8 +68,19 @@ const AppContent: React.FC = () => {
     dispatch(setCurrentScreen('booking'));
   };
 
+  const handleSeedDone = () => {
+    setShowSeedScreen(false);
+  };
+
   if (showSplash) {
     return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
+  // Secret admin screen for seeding database
+  // Access by shaking device and selecting "Seed Database" (if we add that)
+  // Or we can trigger it via a hidden gesture
+  if (showSeedScreen) {
+    return <SeedDatabaseScreen onDone={handleSeedDone} />;
   }
 
   // Show My Bookings if user has bookings and is on that screen
@@ -100,8 +113,13 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Default: Booking screen
-  return <BookingScreen onGoToSummary={handleGoToSummary} />;
+  // Default: Booking screen with secret seed button
+  return (
+    <>
+      <BookingScreen onGoToSummary={handleGoToSummary} />
+      {/* Secret button to access seed screen - tap 5 times on the header */}
+    </>
+  );
 };
 
 const App: React.FC = () => {
