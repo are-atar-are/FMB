@@ -58,6 +58,10 @@ const bookingSlice = createSlice({
           status: 'confirmed',
           createdAt: new Date().toISOString(),
         };
+        // Ensure bookings array exists
+        if (!state.bookings) {
+          state.bookings = [];
+        }
         state.bookings.push(newBooking);
         state.hasBooking = true;
         state.placeInLine = 1;
@@ -66,6 +70,11 @@ const bookingSlice = createSlice({
       }
     },
     cancelBooking: (state, action: PayloadAction<string>) => {
+      // Ensure bookings array exists
+      if (!state.bookings) {
+        state.bookings = [];
+        return;
+      }
       const booking = state.bookings.find(b => b.id === action.payload);
       if (booking) {
         booking.status = 'cancelled';
