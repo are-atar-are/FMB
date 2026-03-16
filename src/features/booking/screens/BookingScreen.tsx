@@ -27,9 +27,9 @@ import { Vehicle } from '../types';
 
 // Vehicle images
 const vehicleImages: { [key: string]: any } = {
-  'hilux-side': require('../../assets/images/vehicles/hilux-side.jpg'),
-  'hilux-front': require('../../assets/images/vehicles/hilux-front.jpg'),
-  'sedan-top': require('../../assets/images/vehicles/sedan-top.jpg'),
+  'hilux-side': require('../../../assets/images/vehicles/hilux-side.jpg'),
+  'hilux-front': require('../../../assets/images/vehicles/hilux-front.jpg'),
+  'sedan-top': require('../../../assets/images/vehicles/sedan-top.jpg'),
 };
 
 const BookingScreen: React.FC = () => {
