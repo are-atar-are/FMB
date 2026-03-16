@@ -92,6 +92,10 @@ const bookingSlice = createSlice({
     updateArrivalStatus: (state, action: PayloadAction<ArrivalStatus>) => {
       // For future driver status updates
     },
+    setBookings: (state, action: PayloadAction<Booking[]>) => {
+      state.bookings = action.payload;
+      state.hasBooking = action.payload.some(b => b.status === 'confirmed' || b.status === 'pending');
+    },
   },
 });
 
@@ -109,6 +113,7 @@ export const {
   cancelBooking,
   clearCurrentSelection,
   updateArrivalStatus,
+  setBookings,
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;

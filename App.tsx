@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/store/store';
@@ -13,6 +13,7 @@ import {
   confirmBooking,
   cancelBooking,
   clearCurrentSelection,
+  setBookings,
 } from './src/features/booking/redux/bookingSlice';
 import BookingScreen from './src/features/booking/screens/BookingScreen';
 import BookingSummaryScreen from './src/features/booking/screens/BookingSummaryScreen';
@@ -20,19 +21,28 @@ import BookingConfirmationScreen from './src/features/booking/screens/BookingCon
 import MyBookingsScreen from './src/features/booking/screens/MyBookingsScreen';
 import SplashScreen from './src/components/SplashScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
-import SeedDatabaseScreen from './src/features/admin/SeedDatabaseScreen';
-import { useFirebaseVehicles } from './src/services/firebaseHooks';
+import { useFirebaseVehicles, loadBookingsFromStorage } from './src/services/firebaseHooks';
 
 const AppContent: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const [showSeedScreen, setShowSeedScreen] = useState(false);
   const dispatch = useDispatch();
   const currentScreen = useSelector(selectCurrentScreen);
   const hasBooking = useSelector(selectHasBooking);
   const bookings = useSelector(selectBookings);
 
-  // Initialize Firebase data
+  // Initialize vehicles
   useFirebaseVehicles();
+
+  // Load bookings from storage on mount
+  useEffect(() => {
+    const loadBookings = async () => {
+      const storedBookings = await loadBookingsFromStorage();
+      if (storedBookings.length > 0) {
+        dispatch(setBookings(storedBookings));
+      }
+    };
+    loadBookings();
+  }, [dispatch]);
 
   const handleSplashFinish = () => {
     setShowSplash(false);
@@ -68,19 +78,8 @@ const AppContent: React.FC = () => {
     dispatch(setCurrentScreen('booking'));
   };
 
-  const handleSeedDone = () => {
-    setShowSeedScreen(false);
-  };
-
   if (showSplash) {
     return <SplashScreen onFinish={handleSplashFinish} />;
-  }
-
-  // Secret admin screen for seeding database
-  // Access by shaking device and selecting "Seed Database" (if we add that)
-  // Or we can trigger it via a hidden gesture
-  if (showSeedScreen) {
-    return <SeedDatabaseScreen onDone={handleSeedDone} />;
   }
 
   // Show My Bookings if user has bookings and is on that screen
@@ -113,13 +112,8 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Default: Booking screen with secret seed button
-  return (
-    <>
-      <BookingScreen onGoToSummary={handleGoToSummary} />
-      {/* Secret button to access seed screen - tap 5 times on the header */}
-    </>
-  );
+  // Default: Booking screen
+  return <BookingScreen onGoToSummary={handleGoToSummary} />;
 };
 
 const App: React.FC = () => {
