@@ -17,6 +17,16 @@ export interface Vehicle {
   vehicleImage?: string;
 }
 
+export interface Booking {
+  id: string;
+  vehicle: Vehicle;
+  date: string;
+  time: string;
+  days: number;
+  status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
 export interface BookingState {
   hasBooking: boolean;
   selectedDate: string | null;
@@ -26,6 +36,8 @@ export interface BookingState {
   placeInLine: number | null;
   estimatedWaitMinutes: number | null;
   vehicles: Vehicle[];
+  bookings: Booking[];
+  currentScreen: 'booking' | 'summary' | 'confirmation' | 'myBookings';
   shouldNavigateToPayment: boolean;
   shouldShowCarInfoModal: boolean;
 }

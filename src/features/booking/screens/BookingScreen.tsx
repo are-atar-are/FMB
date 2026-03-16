@@ -32,7 +32,11 @@ const vehicleImages: { [key: string]: any } = {
   'sedan-top': require('../../../assets/images/vehicles/sedan-top.jpg'),
 };
 
-const BookingScreen: React.FC = () => {
+interface BookingScreenProps {
+  onGoToSummary: () => void;
+}
+
+const BookingScreen: React.FC<BookingScreenProps> = ({ onGoToSummary }) => {
   const dispatch = useDispatch<AppDispatch>();
   const vehicles = useSelector(selectVehicles);
   const selectedDate = useSelector(selectSelectedDate);
@@ -285,14 +289,7 @@ const BookingScreen: React.FC = () => {
             !canConfirm && styles.disabledButton,
           ]}
           disabled={!canConfirm}
-          onPress={() => {
-            console.log('Booking confirmed:', {
-              date: selectedDate,
-              vehicle: selectedVehicle?.name,
-              days: selectedDays,
-              time: selectedTime,
-            });
-          }}
+          onPress={onGoToSummary}
         >
           <Text style={styles.confirmButtonText}>
             {canConfirm ? 'Confirm Booking' : 'Select All Options'}

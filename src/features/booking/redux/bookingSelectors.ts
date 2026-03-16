@@ -1,67 +1,36 @@
-import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../../../store/store';
+import { RootState } from '../../store/store';
 
-const selectBookingState = (state: RootState) => state.booking;
+export const selectVehicles = (state: RootState) => state.booking.vehicles;
 
-export const selectHasBooking = createSelector(
-  selectBookingState,
-  (booking) => booking.hasBooking
-);
+export const selectSelectedDate = (state: RootState) => state.booking.selectedDate;
 
-export const selectSelectedDate = createSelector(
-  selectBookingState,
-  (booking) => booking.selectedDate
-);
+export const selectSelectedTime = (state: RootState) => state.booking.selectedTime;
 
-export const selectSelectedTime = createSelector(
-  selectBookingState,
-  (booking) => booking.selectedTime
-);
+export const selectSelectedVehicle = (state: RootState) => state.booking.selectedVehicle;
 
-export const selectSelectedVehicle = createSelector(
-  selectBookingState,
-  (booking) => booking.selectedVehicle
-);
+export const selectSelectedDays = (state: RootState) => state.booking.selectedDays;
 
-export const selectSelectedDays = createSelector(
-  selectBookingState,
-  (booking) => booking.selectedDays
-);
+export const selectHasBooking = (state: RootState) => state.booking.hasBooking;
 
-export const selectVehicles = createSelector(
-  selectBookingState,
-  (booking) => booking.vehicles
-);
+export const selectPlaceInLine = (state: RootState) => state.booking.placeInLine;
 
-export const selectShouldNavigateToPayment = createSelector(
-  selectBookingState,
-  (booking) => booking.shouldNavigateToPayment
-);
+export const selectEstimatedWaitMinutes = (state: RootState) => state.booking.estimatedWaitMinutes;
 
-export const selectShouldShowCarInfoModal = createSelector(
-  selectBookingState,
-  (booking) => booking.shouldShowCarInfoModal
-);
+export const selectShouldNavigateToPayment = (state: RootState) =>
+  state.booking.shouldNavigateToPayment;
 
-export const selectPlaceInLine = createSelector(
-  selectBookingState,
-  (booking) => booking.placeInLine
-);
+export const selectShouldShowCarInfoModal = (state: RootState) =>
+  state.booking.shouldShowCarInfoModal;
 
-export const selectEstimatedWaitMinutes = createSelector(
-  selectBookingState,
-  (booking) => booking.estimatedWaitMinutes
-);
+export const selectCurrentScreen = (state: RootState) => state.booking.currentScreen;
 
-export const selectBookingDetails = createSelector(
-  selectSelectedVehicle,
-  selectSelectedDate,
-  selectSelectedTime,
-  selectSelectedDays,
-  (vehicle, date, time, days) => ({
-    vehicle,
-    date,
-    time,
-    days,
-  })
-);
+export const selectBookings = (state: RootState) => state.booking.bookings;
+
+export const selectActiveBookings = (state: RootState) =>
+  state.booking.bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
+
+export const selectCanConfirmBooking = (state: RootState) =>
+  !!state.booking.selectedDate &&
+  !!state.booking.selectedTime &&
+  !!state.booking.selectedVehicle &&
+  !!state.booking.selectedDays;
