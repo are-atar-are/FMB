@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/store/store';
@@ -21,28 +21,22 @@ import BookingConfirmationScreen from './src/features/booking/screens/BookingCon
 import MyBookingsScreen from './src/features/booking/screens/MyBookingsScreen';
 import SplashScreen from './src/components/SplashScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
-import { useFirebaseVehicles, loadBookingsFromStorage } from './src/services/firebaseHooks';
+import SeedDatabaseScreen from './src/features/admin/SeedDatabaseScreen';
+import { useFirebaseVehicles, useUserBookings } from './src/services/firebaseHooks';
+
+const CURRENT_USER_ID = 'user-001';
 
 const AppContent: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [showSeedScreen, setShowSeedScreen] = useState(false);
   const dispatch = useDispatch();
   const currentScreen = useSelector(selectCurrentScreen);
   const hasBooking = useSelector(selectHasBooking);
   const bookings = useSelector(selectBookings);
 
-  // Initialize vehicles
+  // Initialize Firebase data
   useFirebaseVehicles();
-
-  // Load bookings from storage on mount
-  useEffect(() => {
-    const loadBookings = async () => {
-      const storedBookings = await loadBookingsFromStorage();
-      if (storedBookings.length > 0) {
-        dispatch(setBookings(storedBookings));
-      }
-    };
-    loadBookings();
-  }, [dispatch]);
+  useUserBookings(CURRENT_USER_ID);
 
   const handleSplashFinish = () => {
     setShowSplash(false);
@@ -78,8 +72,17 @@ const AppContent: React.FC = () => {
     dispatch(setCurrentScreen('booking'));
   };
 
+  const handleSeedDone = () => {
+    setShowSeedScreen(false);
+  };
+
   if (showSplash) {
     return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
+  // Admin screen for seeding database
+  if (showSeedScreen) {
+    return <SeedDatabaseScreen onDone={handleSeedDone} />;
   }
 
   // Show My Bookings if user has bookings and is on that screen

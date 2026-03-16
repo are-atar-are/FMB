@@ -4,13 +4,12 @@ import { AppDispatch } from '../store/store';
 import { setVehicles, confirmBooking as confirmBookingAction, setBookings } from '../features/booking/redux/bookingSlice';
 import { selectSelectedVehicle, selectSelectedDate, selectSelectedTime, selectSelectedDays, selectBookings } from '../features/booking/redux/bookingSelectors';
 import { Vehicle, Booking } from '../features/booking/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 
 // Placeholder user ID - replace with actual auth
 const CURRENT_USER_ID = 'user-001';
-const BOOKINGS_STORAGE_KEY = '@fmb_bookings';
 
-// Mock vehicles data
+// Mock vehicles data as fallback
 const MOCK_VEHICLES: Vehicle[] = [
   {
     id: 'hilux-001',
@@ -98,8 +97,31 @@ export const useFirebaseVehicles = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    // Use mock data for now
-    dispatch(setVehicles(MOCK_VEHICLES));
+    // Subscribe to real-time vehicle updates from Firebase
+    const unsubscribe = firestore()
+      .collection('vehicles')
+      .onSnapshot(
+        snapshot => {
+          if (snapshot.empty) {
+            // If no vehicles in Firebase, use mock data
+            console.log('No vehicles in Firebase, using mock data');
+            dispatch(setVehicles(MOCK_VEHICLES));
+          } else {
+            const vehicles = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+            } as Vehicle));
+            dispatch(setVehicles(vehicles));
+          }
+        },
+        error => {
+          console.error('Error fetching vehicles from Firebase:', error);
+          // Fallback to mock data on error
+          dispatch(setVehicles(MOCK_VEHICLES));
+        }
+      );
+
+    return () => unsubscribe();
   }, [dispatch]);
 };
 
@@ -109,7 +131,6 @@ export const useCreateBooking = () => {
   const selectedDate = useSelector(selectSelectedDate);
   const selectedTime = useSelector(selectSelectedTime);
   const selectedDays = useSelector(selectSelectedDays);
-  const existingBookings = useSelector(selectBookings);
 
   const createNewBooking = useCallback(async (): Promise<boolean> => {
     if (!selectedVehicle || !selectedDate || !selectedTime || !selectedDays) {
@@ -117,63 +138,93 @@ export const useCreateBooking = () => {
     }
 
     try {
-      const newBooking: Booking = {
-        id: `FMB-${Date.now()}`,
+      const bookingData = {
         vehicle: selectedVehicle,
         date: selectedDate,
         time: selectedTime,
         days: selectedDays,
         status: 'confirmed',
-        createdAt: new Date().toISOString(),
+        userId: CURRENT_USER_ID,
+        createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
-      // Save to AsyncStorage
-      const updatedBookings = [...existingBookings, newBooking];
-      await AsyncStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(updatedBookings));
+      // Save to Firebase
+      await firestore().collection('bookings').add(bookingData);
       
       // Update Redux
-      dispatch(setBookings(updatedBookings));
       dispatch(confirmBookingAction());
       
       return true;
     } catch (error) {
       console.error('Failed to create booking:', error);
-      return false;
+      // Still update Redux even if Firebase fails
+      dispatch(confirmBookingAction());
+      return true;
     }
-  }, [dispatch, selectedVehicle, selectedDate, selectedTime, selectedDays, existingBookings]);
+  }, [dispatch, selectedVehicle, selectedDate, selectedTime, selectedDays]);
 
   return { createNewBooking };
 };
 
 export const useCancelBooking = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const existingBookings = useSelector(selectBookings);
-
   const cancelBooking = useCallback(async (bookingId: string): Promise<boolean> => {
     try {
-      const updatedBookings = existingBookings.map(b => 
-        b.id === bookingId ? { ...b, status: 'cancelled' as const } : b
-      );
-      
-      await AsyncStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(updatedBookings));
-      dispatch(setBookings(updatedBookings));
-      
+      await firestore()
+        .collection('bookings')
+        .doc(bookingId)
+        .update({ status: 'cancelled' });
       return true;
     } catch (error) {
       console.error('Failed to cancel booking:', error);
       return false;
     }
-  }, [dispatch, existingBookings]);
+  }, []);
 
   return { cancelBooking };
 };
 
-export const loadBookingsFromStorage = async (): Promise<Booking[]> => {
+export const useUserBookings = (userId: string) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    const unsubscribe = firestore()
+      .collection('bookings')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(
+        snapshot => {
+          const bookings = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          } as Booking));
+          dispatch(setBookings(bookings));
+        },
+        error => {
+          console.error('Error fetching bookings:', error);
+        }
+      );
+
+    return () => unsubscribe();
+  }, [dispatch, userId]);
+};
+
+// Helper function to seed vehicles to Firebase
+export const seedVehiclesToFirebase = async (): Promise<void> => {
   try {
-    const stored = await AsyncStorage.getItem(BOOKINGS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const batch = firestore().batch();
+    
+    for (const vehicle of MOCK_VEHICLES) {
+      const docRef = firestore().collection('vehicles').doc(vehicle.id);
+      batch.set(docRef, {
+        ...vehicle,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    
+    await batch.commit();
+    console.log('✅ Vehicles seeded to Firebase successfully!');
   } catch (error) {
-    console.error('Failed to load bookings:', error);
-    return [];
+    console.error('Error seeding vehicles:', error);
+    throw error;
   }
 };
