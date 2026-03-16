@@ -2,16 +2,16 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers } from 'redux';
-import dashboardReducer from '../features/dashboard/dashboardSlice';
+import bookingReducer from '../features/booking/redux/bookingSlice';
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['dashboard'],
+  whitelist: ['booking'],
 };
 
 const rootReducer = combineReducers({
-  dashboard: dashboardReducer,
+  booking: bookingReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
