@@ -37,6 +37,8 @@ target 'FMB' do
         # Fix for gRPC-Core and BoringSSL-GRPC template keyword errors
         if target.name == 'gRPC-Core' || target.name == 'gRPC-C++' || target.name == 'BoringSSL-GRPC'
           config.build_settings['OTHER_CPLUSPLUSFLAGS'] = '$(inherited) -Wno-missing-template-arg-list-after-template-kw -Wno-deprecated-declarations'
+          # Remove unsupported -G flag for simulator builds
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'].map { |s| s.gsub('-G', '') } if config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
         end
       end
     end
