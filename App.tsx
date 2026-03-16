@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/store/store';
@@ -18,12 +18,23 @@ import BookingScreen from './src/features/booking/screens/BookingScreen';
 import BookingSummaryScreen from './src/features/booking/screens/BookingSummaryScreen';
 import BookingConfirmationScreen from './src/features/booking/screens/BookingConfirmationScreen';
 import MyBookingsScreen from './src/features/booking/screens/MyBookingsScreen';
+import SplashScreen from './src/components/SplashScreen';
+import ErrorBoundary from './src/components/ErrorBoundary';
+import { useFirebaseVehicles } from './src/services/firebaseHooks';
 
 const AppContent: React.FC = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const dispatch = useDispatch();
   const currentScreen = useSelector(selectCurrentScreen);
   const hasBooking = useSelector(selectHasBooking);
   const bookings = useSelector(selectBookings);
+
+  // Initialize Firebase data
+  useFirebaseVehicles();
+
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
 
   const handleGoToSummary = () => {
     dispatch(setCurrentScreen('summary'));
@@ -54,6 +65,10 @@ const AppContent: React.FC = () => {
     dispatch(clearCurrentSelection());
     dispatch(setCurrentScreen('booking'));
   };
+
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
 
   // Show My Bookings if user has bookings and is on that screen
   if (currentScreen === 'myBookings') {
@@ -91,11 +106,13 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <AppContent />
-      </PersistGate>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <AppContent />
+        </PersistGate>
+      </Provider>
+    </ErrorBoundary>
   );
 };
 
